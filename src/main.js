@@ -32,7 +32,36 @@ var scene=     director.createScene();
         setFillStyle('#ff0000').
         setStrokeStyle('#000000');
  shield=  new Shield().
-        setLocation(20,20).
+        setLocation(0,0).
+        setSize(60,60).
+        setFillStyle('#00ffff').
+        setStrokeStyle('#000000');
+
+ shield2=  new Shield().
+        setLocation(0,0).
+        setSize(60,60).
+        setFillStyle('#00ffff').
+        setStrokeStyle('#000000');
+
+ shield3=  new Shield().
+        setLocation(0,0).
+        setSize(60,60).
+        setFillStyle('#00ffff').
+        setStrokeStyle('#000000');
+
+ shield4=  new Shield().
+        setLocation(0,0).
+        setSize(60,60).
+        setFillStyle('#00ffff').
+        setStrokeStyle('#000000');
+
+ shield5=  new Shield().
+        setLocation(0,0).
+        setSize(60,60).
+        setFillStyle('#00ffff').
+        setStrokeStyle('#000000');
+ shield6=  new Shield().
+        setLocation(0,0).
         setSize(60,60).
         setFillStyle('#00ffff').
         setStrokeStyle('#000000');
@@ -42,8 +71,27 @@ scene.mouseMove = function(mouseEvent) {
 	//shield.setLocation(mouseEvent.x, mouseEvent.y);
 };
 	 
+
 // add it to the scene
+//rotate to top-left
+shield.setRotationAnchored(0.261799388,0,0).setLocation(0, util.bodySizeV-util.shieldSize);
+//rotate to top-right
+shield2.setRotationAnchored(0.261799388+(Math.PI / 3),0,0).setLocation(util.bodySizeH * 2, util.bodySizeV-util.shieldSize);
+//rotate to front
+shield3.setRotationAnchored(0.261799388+(Math.PI / 3)+(Math.PI / 3),0,0).setLocation(3 * util.bodySizeH, 2 * util.bodySizeV);
+//rotate to bottom-right
+shield4.setRotationAnchored(0.261799388+(3 * (Math.PI / 3)),0,0).setLocation(util.bodySizeH * 2, 5 * util.bodySizeV);
+//rotate to bottom-left
+shield5.setRotationAnchored(0.261799388+(4 * (Math.PI / 3)),0,0).setLocation(0, 5 * util.bodySizeV);
+//rotate to back
+shield6.setRotationAnchored(0.261799388+(5 * (Math.PI / 3)),0,0).setLocation(-util.bodySizeH, 2 * util.bodySizeV);
+
 circle.addChild(shield);
+circle.addChild(shield2);
+circle.addChild(shield3);
+circle.addChild(shield4);
+circle.addChild(shield5);
+circle.addChild(shield6);
 scene.addChild(circle);
 
 //turn off actor events globally

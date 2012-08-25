@@ -11,7 +11,7 @@ function(util, BodySegment) {
 	Shield.prototype = {
 		side: null,
 		
-		paintCircle : function(director, time) {
+		paint : function(director, time) {
 			var ctx = director.ctx;
 			
             ctx.lineWidth= this.lineWidth;
@@ -47,6 +47,12 @@ function(util, BodySegment) {
 			ctx.lineTo(0,0);
 			ctx.fill();
 			ctx.stroke();
+			
+			
+			ctx.fillStyle='#000000';
+			ctx.fillRect(0,0,5,5); 
+
+
 			ctx.closePath();
 		},
 	};

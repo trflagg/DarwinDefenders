@@ -3,8 +3,9 @@ function(util, BodySegment) {
 	Body = function() {
 		Body.superclass.constructor.call(this);
 		
-		this.vertical = util.bodySize;
-		this.horizontal = this.vertical * 2 * Math.cos(Math.PI / 6);
+		this.vertical = util.bodySizeV;
+		this.horizontal = util.bodySizeH;
+		//this.horizontal = this.vertical * 2 * Math.cos(Math.PI / 6);
 		return this;
 	};
 	
@@ -14,7 +15,7 @@ function(util, BodySegment) {
 		vertical: null,
 		horizontal: null,
 	
-		paintCircle : function(director, time) {
+		paint : function(director, time) {
 			var ctx = director.ctx;
 			
             ctx.lineWidth= this.lineWidth;
@@ -56,8 +57,11 @@ function(util, BodySegment) {
 			ctx.lineTo(addH+0,addV+(2 * this.vertical));
 			ctx.fill();
 			ctx.stroke();
-			ctx.closePath();
+			
+			ctx.fillStyle='#000000';
+			ctx.fillRect(0,0,5,5); 
 
+			ctx.closePath();
 
 		},
 	};
