@@ -12,8 +12,8 @@ requirejs.config({
 });
 
 // Start the main app logic.
-require(['./util','./Body','./Shield'],
-function   (util, Body, Shield) {
+require(['./util','./Body','./Shield', './Gun', './Ship'],
+function   (util, Body, Shield, Gun, Ship) {
 
 // create a director object
 var director = new CAAT.Director().initialize(
@@ -24,75 +24,44 @@ var director = new CAAT.Director().initialize(
 
 // add a scene object to the director.
 var scene=     director.createScene();
- 
+
 // create a CAAT actor
- circle=  new Body().
-        setLocation(20,20).
-        setSize(60,60).
-        setFillStyle('#ff0000').
-        setStrokeStyle('#000000');
- shield=  new Shield().
-        setLocation(0,0).
-        setSize(60,60).
-        setFillStyle('#00ffff').
-        setStrokeStyle('#000000');
+ ship = new Ship();
+ ship.addBodySegment(new Gun(), util.SEGMENT_TOP_RIGHT);
+ ship.addBodySegment(new Gun(), util.SEGMENT_FRONT);
+ ship.addBodySegment(new Gun(), util.SEGMENT_BOTTOM_RIGHT);
+ ship.addBodySegment(new Shield(), util.SEGMENT_TOP_LEFT);
+ ship.addBodySegment(new Shield(), util.SEGMENT_BACK);
+ ship.addBodySegment(new Shield(), util.SEGMENT_BOTTOM_LEFT);
 
- shield2=  new Shield().
-        setLocation(0,0).
-        setSize(60,60).
-        setFillStyle('#00ffff').
-        setStrokeStyle('#000000');
-
- shield3=  new Shield().
-        setLocation(0,0).
-        setSize(60,60).
-        setFillStyle('#00ffff').
-        setStrokeStyle('#000000');
-
- shield4=  new Shield().
-        setLocation(0,0).
-        setSize(60,60).
-        setFillStyle('#00ffff').
-        setStrokeStyle('#000000');
-
- shield5=  new Shield().
-        setLocation(0,0).
-        setSize(60,60).
-        setFillStyle('#00ffff').
-        setStrokeStyle('#000000');
- shield6=  new Shield().
-        setLocation(0,0).
-        setSize(60,60).
-        setFillStyle('#00ffff').
-        setStrokeStyle('#000000');
-
+//make list of bullets
+bulletList = new Array();
+	
 scene.mouseMove = function(mouseEvent) {
-	circle.setLocation(mouseEvent.x, mouseEvent.y);
+	ship.setLocation(mouseEvent.x, mouseEvent.y);
 	//shield.setLocation(mouseEvent.x, mouseEvent.y);
 };
 	 
+scene.mouseDown = function(mouseEvent) {
+	var newBList = ship.shoot();
+	bulletList = bulletList.concat(newBList);
+	for (var i=0;i<newBList.length; i++)
+	{
+		scene.addChild(newBList[i]);
+	}
+};
+
+//function for each rendered frame
+director.onRenderStart= function(director, time) {
+	for (var i=0;i<bulletList.length; i++)
+	{
+		var b = bulletList[i];
+		b.setPosition(b.x + b.vx, b.y + b.vy);
+	}
+}
 
 // add it to the scene
-//rotate to top-left
-shield.setRotationAnchored(0.261799388,0,0).setLocation(0, util.bodySizeV-util.shieldSize);
-//rotate to top-right
-shield2.setRotationAnchored(0.261799388+(Math.PI / 3),0,0).setLocation(util.bodySizeH * 2, util.bodySizeV-util.shieldSize);
-//rotate to front
-shield3.setRotationAnchored(0.261799388+(Math.PI / 3)+(Math.PI / 3),0,0).setLocation(3 * util.bodySizeH, 2 * util.bodySizeV);
-//rotate to bottom-right
-shield4.setRotationAnchored(0.261799388+(3 * (Math.PI / 3)),0,0).setLocation(util.bodySizeH * 2, 5 * util.bodySizeV);
-//rotate to bottom-left
-shield5.setRotationAnchored(0.261799388+(4 * (Math.PI / 3)),0,0).setLocation(0, 5 * util.bodySizeV);
-//rotate to back
-shield6.setRotationAnchored(0.261799388+(5 * (Math.PI / 3)),0,0).setLocation(-util.bodySizeH, 2 * util.bodySizeV);
-
-circle.addChild(shield);
-circle.addChild(shield2);
-circle.addChild(shield3);
-circle.addChild(shield4);
-circle.addChild(shield5);
-circle.addChild(shield6);
-scene.addChild(circle);
+scene.addChild(ship);
 
 //turn off actor events globally
 CAAT.Actor.prototype.mouseEnabled= false;

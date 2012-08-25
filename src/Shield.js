@@ -3,7 +3,15 @@ function(util, BodySegment) {
 	Shield = function() {
 		Shield.superclass.constructor.call(this);
 		
+		
+        this.setFillStyle('#ffff00');
+        this.setStrokeStyle('#000000');
+
+
 		this.side = util.shieldSize;
+		
+		this.bodyType = util.TYPE_SHIELD;
+		
 		return this;
 	};
 	
@@ -49,8 +57,8 @@ function(util, BodySegment) {
 			ctx.stroke();
 			
 			
-			ctx.fillStyle='#000000';
-			ctx.fillRect(0,0,5,5); 
+			//ctx.fillStyle='#000000';
+			//ctx.fillRect(0,0,5,5); 
 
 
 			ctx.closePath();

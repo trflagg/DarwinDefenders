@@ -8,6 +8,7 @@ function(util) {
 	
 
 	BodySegment.prototype = {
+		type: null,
 	};
 	
 	extend(BodySegment, CAAT.ActorContainer, null);
