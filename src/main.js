@@ -12,8 +12,8 @@ requirejs.config({
 });
 
 // Start the main app logic.
-require(['./util','./Body','./Shield', './Gun', './Ship'],
-function   (util, Body, Shield, Gun, Ship) {
+require(['./util','./Body','./Shield', './Gun', './Ship', './GameScene'],
+function   (util, Body, Shield, Gun, Ship, GameScene) {
 
 // create a director object
 var director = new CAAT.Director().initialize(
@@ -22,10 +22,14 @@ var director = new CAAT.Director().initialize(
         document.getElementById('c1')
 );
 
+//start the game
+gameScene = new GameScene(director);
+
 // add a scene object to the director.
-var scene=     director.createScene();
+//var scene=     director.createScene();
 
 // create a CAAT actor
+/*
  ship = new Ship();
  ship.addBodySegment(new Gun(), util.SEGMENT_TOP_RIGHT);
  ship.addBodySegment(new Gun(), util.SEGMENT_FRONT);
@@ -45,31 +49,18 @@ ship2.addBodySegment(new Shield(), util.SEGMENT_BOTTOM_LEFT);
 ship2.addBodySegment(new Shield(), util.SEGMENT_BACK);
 ship2.addBodySegment(new Shield(), util.SEGMENT_TOP_LEFT);
 scene.addChild(ship2);
+*/
 
 //collision hash
-hash= new CAAT.SpatialHash().initialize( util.canvasWidth, util.canvasHeight, util.hashGridSizeX, util.hashGridSizeY);
+//hash= new CAAT.SpatialHash().initialize( util.canvasWidth, util.canvasHeight, util.hashGridSizeX, util.hashGridSizeY);
 
-
-//make list of bullets
-bulletList = new Array();
-	
-scene.mouseMove = function(mouseEvent) {
-	ship.setLocation(mouseEvent.x, mouseEvent.y);
-	//shield.setLocation(mouseEvent.x, mouseEvent.y);
-};
-	 
-scene.mouseDown = function(mouseEvent) {
-	var newBList = ship.shoot();
-	bulletList = bulletList.concat(newBList);
-	for (var i=0;i<newBList.length; i++)
-	{
-		scene.addChild(newBList[i]);
-	}
-};
 
 //function for each rendered frame
-director.onRenderStart= function(director, time) {
 
+director.onRenderStart= function(director, time) {
+	gameScene.onTick(director, time);
+}
+/*
 	//prepare collision detection
     hash.clearObject();
 
@@ -121,10 +112,10 @@ director.onRenderStart= function(director, time) {
 		}
 		
 	});
-}
+}*/
 
 // add it to the scene
-scene.addChild(ship);
+//scene.addChild(ship);
 
 //turn off actor events globally
 CAAT.Actor.prototype.mouseEnabled= false;
