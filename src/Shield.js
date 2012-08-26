@@ -19,6 +19,20 @@ function(util, BodySegment) {
 	Shield.prototype = {
 		side: null,
 		
+		checkPointCollision: function(point) {
+			console.log("Shield CheckPointCollision("+point.x+","+point.y+")");
+			//hack, check for complete right triangle
+			if (point.x > 0 && 
+				point.x < util.shieldSize &&
+				point.y > 0 &&
+				point.y < util.shieldSize)
+			{
+				return true;
+			}
+			
+			return false;
+		},
+		
 		paint : function(director, time) {
 			var ctx = director.ctx;
 			

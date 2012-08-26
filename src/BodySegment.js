@@ -9,6 +9,11 @@ function(util) {
 
 	BodySegment.prototype = {
 		type: null,
+		
+		checkPointCollision : function(pos)
+		{
+			return false;
+		}
 	};
 	
 	extend(BodySegment, CAAT.ActorContainer, null);

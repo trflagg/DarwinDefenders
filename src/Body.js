@@ -5,13 +5,17 @@ function(util, BodySegment, Bullet) {
 		
 		this.vertical = util.bodySizeV;
 		this.horizontal = util.bodySizeH;
+		this.setSize(3 * util.bodySizeH, 6 * util.bodySizeV);
 		//this.horizontal = this.vertical * 2 * Math.cos(Math.PI / 6);
 		
         this.setFillStyle('#ff0000');
         this.setStrokeStyle('#000000');
 
 		this.segments = new Array();
-		
+		for (var i=0; i<6; i++)
+		{
+			this.segments[i] = null;
+		}
 		this.bodyType = util.TYPE_BODY;
 		
 		return this;
@@ -23,21 +27,129 @@ function(util, BodySegment, Bullet) {
 		vertical: null,
 		horizontal: null,
 		segments: null,
-	
+		ownerPosition: null,
+		owner: null,
+		
+		getCollisionRect: function() {
+			var x = this.getBaseX();
+			var y = this.getBaseY();
+			var width = (this.width) ;
+			var height = (this.height); 
+			var myRect = new CAAT.Rectangle().setBounds(x,y,width,height);
+			
+			//check for slaves
+			for(var i=0; i<this.segments.length; i++)
+			{
+				var seg = this.segments[i];
+				if (seg !== null)
+				{
+					if (seg.bodyType == util.TYPE_BODY)
+					{
+						var newRect = seg.getCollisionRect();
+						newRect = this.moveBodyLocationByPosition(newRect, i);
+						
+						myRect.unionRectangle(newRect);
+					}
+				}
+			}
+			
+			return myRect;
+			
+		},
+		
+		segmentHit: function(seg, position) {
+			this.removeChild(seg);
+			this.segments[position] = null;
+		},
+		
+		checkBulletCollision: function(bullet) {
+			console.log("Body CheckBulletCollision("+bullet.x+","+bullet.y+")");
+			var bulletPos = new CAAT.Point(bullet.x, bullet.y);
+			var modelPos = this.viewToModel(bulletPos);
+			
+			//make sure your own mask is secure before helping others
+			if (this.isPointInBody(modelPos))
+			{
+				return this;
+			}
+			
+			//now check the segments
+			for(var i=0; i<this.segments.length; i++)
+			{
+				var seg = this.segments[i];
+				if (seg !== null)
+				{
+					if (seg.bodyType == util.TYPE_BODY)
+					{
+						//run this method instead
+						var result = seg.checkBulletCollision(bullet);
+						if (result !== null)
+						{
+							this.segmentHit(seg, i)
+							return result;
+						}
+					}
+					else
+					{
+				 		modelPos = seg.viewToModel(new CAAT.Point(bullet.x, bullet.y))
+				 		if (seg.checkPointCollision(modelPos))
+				 		{
+				 			//remove it
+				 			this.segmentHit(seg, i);
+				 			return seg;
+				 		}
+					}
+				}
+			}
+			
+			return null;
+		},
+		
+		isPointInBody: function(modelPos) {	
+			//convert pos to center
+			var centerX = this.x + util.bodySizeH;
+			var centerY = this.y + (2 * util.bodySizeV);
+			//check if point is in hexagon
+			//big ups to http://www.playchilla.com/how-to-check-if-a-point-is-inside-a-hexagon
+			var q2x = Math.abs(modelPos.x - centerX);         // transform the test point locally and to quadrant 2
+    		var q2y = Math.abs(modelPos.y - centerY);         // transform the test point locally and to quadrant 2
+    		if (q2x > util.bodySizeH || q2y > util.bodySizeV*2) return false;           // bounding test (since q2 is in quadrant 2 only 2 tests are needed)
+    		return 2 * util.bodySizeV *util.bodySizeH - util.bodySizeV * q2x - util.bodySizeH * q2y >= 0;
+		},
+		
+		makeSlave: function(owner, ownerPosition) {
+			this.owner = owner;
+			this.ownerPosition = ownerPosition;
+			
+			return this;
+		},
+		
 		shoot : function() {
 			var bulletList = new Array();
 			
-			//run through segments looking for guns
+			//run through segments looking for guns or bodies
 			for (var i=0;i < 6; i++)
 			{
-				if (this.segments[i] !== 'undefined')
+				if (this.segments[i] !== null)
 				{
 					var seg = this.segments[i];
 					
-					if (seg.bodyType == util.TYPE_GUN)
+					if (seg.bodyType == util.TYPE_BODY)
+					{
+						//attached bodies shoot
+						var bl = seg.shoot();
+						bulletList = bulletList.concat(bl);
+					}
+					else if (seg.bodyType == util.TYPE_GUN)
 					{
 						//make a bullet
-						var bullet = new CAAT.ShapeActor().setSize(10,10).setFillStyle('#ff0000').setStrokeStyle('#000000').setLocation(this.parent.x, this.parent.y);
+						var bullet = new Bullet().setSize(10,10).setFillStyle('#ff0000').setStrokeStyle('#000000').setLocation(this.getBaseX(), this.getBaseY());
+						
+						//move based on body if owned body
+			 			if (this.owner !== null) 
+			 			{
+			 				bullet = this.moveBodyLocationByPosition(bullet, this.invertPosition(this.ownerPosition));
+			 			}
 						//figure out vx & vy based on segment position
 						switch(i)
 						{
@@ -84,31 +196,21 @@ function(util, BodySegment, Bullet) {
 		
 		addBodySegment: function(segment, position) {
 			
-			switch(position)
+			if (segment.bodyType == util.TYPE_BODY) 
 			{
-				case util.SEGMENT_TOP_RIGHT:
-					segment.setRotationAnchored(0.261799388+(Math.PI / 3),0,0).setLocation(util.bodySizeH * 2, util.bodySizeV-util.shieldSize);
-					break;
-				case util.SEGMENT_FRONT:
-					segment.setRotationAnchored(0.261799388+(Math.PI / 3)+(Math.PI / 3),0,0).setLocation(3 * util.bodySizeH, 2 * util.bodySizeV);
-					break;
-				case util.SEGMENT_BOTTOM_RIGHT:
-					segment.setRotationAnchored(0.261799388+(3 * (Math.PI / 3)),0,0).setLocation(util.bodySizeH * 2, 5 * util.bodySizeV);
-					break;
-				case util.SEGMENT_BOTTOM_LEFT:
-					segment.setRotationAnchored(0.261799388+(4 * (Math.PI / 3)),0,0).setLocation(0, 5 * util.bodySizeV);
-					break;
-				case util.SEGMENT_BACK:
-					segment.setRotationAnchored(0.261799388+(5 * (Math.PI / 3)),0,0).setLocation(-util.bodySizeH, 2 * util.bodySizeV);
-					break;
-				case util.SEGMENT_TOP_LEFT:
-					segment.setRotationAnchored(0.261799388,0,0).setLocation(0, util.bodySizeV-util.shieldSize);
-					break;
-			}	
-			
+				this.moveBodyLocationByPosition(segment, position);
+				var invertPos = this.invertPosition(position);
+				segment.makeSlave(this, invertPos);
+				
+			}
+			else
+			{
+				this.moveLocationByPosition(segment, position);
+			}
 			this.segments[position] = segment;
 			this.addChild(segment);
 			
+			return this;
 		},
 		
 		moveLocationByPosition: function( actor, position) {
@@ -138,7 +240,80 @@ function(util, BodySegment, Bullet) {
 			return actor;
 			
 		},
+		
+		moveBodyLocationByPosition: function(body, position) {
 			
+			switch(position)
+			{
+				case util.SEGMENT_TOP_RIGHT:
+					body.setLocation(body.x + util.bodySizeH, body.y + (-3 * util.bodySizeV));
+					break;
+				case util.SEGMENT_FRONT:
+					body.setLocation(body.x + (2 * util.bodySizeH), body.y + 0);
+					break;
+				case util.SEGMENT_BOTTOM_RIGHT:
+					body.setLocation(body.x + util.bodySizeH, body.y + (3 * util.bodySizeV));
+					break;
+				case util.SEGMENT_BOTTOM_LEFT:
+					body.setLocation(body.x + -util.bodySizeH, body.y + (3 * util.bodySizeV));
+					break;
+				case util.SEGMENT_BACK:
+					body.setLocation(body.x + (-2 * util.bodySizeH), body.y + 0);
+					break;
+				case util.SEGMENT_TOP_LEFT:
+					body.setLocation(body.x + (-util.bodySizeH), body.y + (-3 * util.bodySizeV));
+					break;
+			}	
+			
+			return body;
+			
+		},
+		
+		invertPosition: function(position) {
+			switch(position)
+			{
+				case util.SEGMENT_TOP_RIGHT:
+					return util.SEGMENT_BOTTOM_LEFT;
+				case util.SEGMENT_FRONT:
+					return util.SEGMENT_BACK;
+				case util.SEGMENT_BOTTOM_RIGHT:
+					return util.SEGMENT_TOP_LEFT;
+				case util.SEGMENT_BOTTOM_LEFT:
+					return util.SEGMENT_TOP_RIGHT;
+				case util.SEGMENT_BACK:
+					return util.SEGMENT_FRONT;
+				case util.SEGMENT_TOP_LEFT:
+					return util.SEGMENT_BOTTOM_RIGHT;
+			}	
+			
+			return null;
+		},
+		
+		getBaseX: function() {
+			if (this.owner == null)
+			{
+				if(this.parent !== null)
+				{
+					return this.parent.x;
+				}
+				return 0
+			}
+			
+			return this.owner.getBaseX();
+		},
+		
+		getBaseY: function() {
+			if (this.owner == null)
+			{
+				if(this.parent !== null)
+				{
+					return this.parent.y;
+				}
+				return 0;
+			}
+			
+			return this.owner.getBaseY();
+		},
 		
 		paint : function(director, time) {
 			var ctx = director.ctx;
@@ -183,8 +358,6 @@ function(util, BodySegment, Bullet) {
 			ctx.fill();
 			ctx.stroke();
 			
-			ctx.fillStyle='#000000';
-			ctx.fillRect(0,0,5,5); 
 
 			ctx.closePath();
 

@@ -15,10 +15,14 @@ function(util) {
 	
 
 	Bullet.prototype = {
-		
+		move: function()
+		{
+			this.setPosition(this.x + this.vx, this.y + this.vy);
+			
+		},
 	};
 	
-	extend(Bullet, CAAT.StarActor);
+	extend(Bullet, CAAT.ShapeActor);
 	
 	return Bullet;
 });

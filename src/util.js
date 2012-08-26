@@ -1,6 +1,8 @@
 define ({
 	canvasHeight: 640,
 	canvasWidth: 480,
+	hashGridSizeX: 10,
+	hashGridSizeY: 10,
 
 	bodySizeV: 10,
 	bodySizeH: 10 * 2 * Math.cos(Math.PI / 6),
