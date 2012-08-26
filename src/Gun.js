@@ -17,6 +17,11 @@ function(util) {
 	Gun.prototype = {
 		side: null,
 		
+		checkPointCollision : function(pos)
+		{
+			return false;
+		},
+		
 		paint : function(director, time) {
 			var ctx = director.ctx;
 			

@@ -66,10 +66,12 @@ function(util, BodySegment, Bullet) {
 			console.log("Body CheckBulletCollision("+bullet.x+","+bullet.y+")");
 			var bulletPos = new CAAT.Point(bullet.x, bullet.y);
 			var modelPos = this.viewToModel(bulletPos);
+			console.log("modelPos: ("+modelPos.x+","+modelPos.y+")");
 			
 			//make sure your own mask is secure before helping others
 			if (this.isPointInBody(modelPos))
 			{
+				console.log("********hit BODY********");
 				return this;
 			}
 			
@@ -85,7 +87,12 @@ function(util, BodySegment, Bullet) {
 						var result = seg.checkBulletCollision(bullet);
 						if (result !== null)
 						{
-							this.segmentHit(seg, i)
+							//was it the base
+							if (result.bodyType == util.TYPE_BODY)
+							{
+								//remove it!
+								this.segmentHit(result, i)
+							}
 							return result;
 						}
 					}
@@ -106,9 +113,16 @@ function(util, BodySegment, Bullet) {
 		},
 		
 		isPointInBody: function(modelPos) {	
+			if (this.owner !== null) 
+			{
+				//convert points for slaves
+				modelPos = this.changePointByBodyPosition(modelPos, this.invertPosition(this.ownerPosition));
+				console.log("SLAVE modelPos: ("+modelPos.x+","+modelPos.y+")");
+			}
 			//convert pos to center
 			var centerX = this.x + util.bodySizeH;
 			var centerY = this.y + (2 * util.bodySizeV);
+			console.log("centerX: "+centerX+" centerY: "+centerY);
 			//check if point is in hexagon
 			//big ups to http://www.playchilla.com/how-to-check-if-a-point-is-inside-a-hexagon
 			var q2x = Math.abs(modelPos.x - centerX);         // transform the test point locally and to quadrant 2
@@ -266,6 +280,40 @@ function(util, BodySegment, Bullet) {
 			}	
 			
 			return body;
+			
+		},
+		
+		changePointByBodyPosition: function(point, position) {
+			
+			switch(position)
+			{
+				case util.SEGMENT_TOP_RIGHT:
+					point.x = point.x + util.bodySizeH;
+					point.y = point.y + (-3 * util.bodySizeV);
+					break;
+				case util.SEGMENT_FRONT:
+					point.x = point.x + (2 * util.bodySizeH);
+					point.y = point.y + 0;
+					break;
+				case util.SEGMENT_BOTTOM_RIGHT:
+					point.x = point.x + util.bodySizeH;
+					point.y = point.y + (3 * util.bodySizeV);
+					break;
+				case util.SEGMENT_BOTTOM_LEFT:
+					point.x = point.x + -util.bodySizeH;
+					point.y = point.y + (3 * util.bodySizeV);
+					break;
+				case util.SEGMENT_BACK:
+					point.x = point.x + (-2 * util.bodySizeH);
+					point.y = point.y + 0;
+					break;
+				case util.SEGMENT_TOP_LEFT:
+					point.x = point.x + (-util.bodySizeH);
+					point.y = point.y + (-3 * util.bodySizeV);
+					break;
+			}	
+			
+			return point;
 			
 		},
 		

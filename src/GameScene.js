@@ -1,5 +1,5 @@
-define(["./util", "./Ship", "./Shield", "./Body", "./Gun"],
-function(util, Ship, Shield, Body, Gun) {
+define(["./util", "./Ship", "./Shield", "./Body", "./Gun", "./Enemy"],
+function(util, Ship, Shield, Body, Gun, Enemy) {
 	GameScene = function(director) {
 		
 		//set director & scene
@@ -11,20 +11,25 @@ function(util, Ship, Shield, Body, Gun) {
 
 		//we gotta have a player
 		this.player = new Ship().setLocation(0,0);
-		this.player.addBodySegment(new Gun(), util.SEGMENT_FRONT);
+		this.player.addBodySegment(new Gun(), util.SEGMENT_FRONT).addBodySegment(new Gun(), util.SEGMENT_BACK);
 		this.scene.addChild(this.player);	
 		
 		//and an enemy
-		this.ship2 = new Ship().setLocation(300,300);
-		var nb2 = new Body().addBodySegment(new Shield(), util.SEGMENT_TOP_LEFT);
-		this.ship2.addBodySegment(nb2, util.SEGMENT_TOP_RIGHT);
-		this.ship2.addBodySegment(new Shield(), util.SEGMENT_FRONT);
-		this.ship2.addBodySegment(new Shield(), util.SEGMENT_BOTTOM_RIGHT);
-		this.ship2.addBodySegment(new Shield(), util.SEGMENT_BOTTOM_LEFT);
-		this.ship2.addBodySegment(new Shield(), util.SEGMENT_BACK);
-		this.ship2.addBodySegment(new Shield(), util.SEGMENT_TOP_LEFT);
-		this.scene.addChild(this.ship2);
-
+		var ship2 = this.createEnemyFromChromosome(
+			[util.TYPE_BODY,
+			util.TYPE_SHIELD,
+			util.TYPE_SHIELD,
+			util.TYPE_GUN,
+			util.TYPE_SHIELD,
+			util.TYPE_GUN,
+			util.SIDE_TOP]);
+		//ship2.setLocation(300,300);
+		this.scene.addChild(ship2);
+		
+		this.enemies = new Array();
+		var id = this.enemies.push(ship2);
+		ship2.setId(id);
+		
 		//list of bullets
 		this.bulletList = new Array();
 		
@@ -85,22 +90,43 @@ function(util, Ship, Shield, Body, Gun) {
 			}
 			
 			//check enemies against bullets
-			var collisionRect = this.ship2.getCollisionRect();
-			this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
-				//run this on collision
-				var b = gameScene.bulletList[obj.id];
-				//check against ship
-				if(gameScene.ship2.checkBulletCollision(b))
-				{
-					//delete bullet
-					if (b !== undefined)
+			for (var i=0;i<this.enemies.length; i++)
+			{
+				var enemy = this.enemies[i];
+				
+				var collisionRect = enemy.getCollisionRect();
+				this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
+					//run this on collision
+					var b = gameScene.bulletList[obj.id];
+					//check against ship
+					if(enemy.checkBulletCollision(b))
 					{
-						b.setDiscardable(true);
-						gameScene.scene.removeChild(b);
-						gameScene.bulletList.splice(obj.id,1); 
+						//delete bullet
+						if (b !== undefined)
+						{
+							b.setDiscardable(true);
+							gameScene.scene.removeChild(b);
+							gameScene.bulletList.splice(obj.id,1); 
+						}
 					}
-				}
-			});
+				});
+			}
+		},
+		
+		createEnemyFromChromosome: function(chromosome)
+		{
+			var newEnemy = new Enemy().initializeFromChromosome(chromosome);
+			return newEnemy;
+		},
+		
+		createSegmentFromType: function(typeNum)
+		{
+			if (typeNum == util.TYPE_NONE) return null;
+			if (typeNum == util.TYPE_BODY) return new Body();
+			if (typeNum == util.TYPE_SHIELD) return new Shield();
+			if (typeNum == util.TYPE_GUN) return new Gun();
+			
+			return null;
 		},
 	};
 	

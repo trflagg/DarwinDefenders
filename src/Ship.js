@@ -81,7 +81,7 @@ function(util,Body) {
 			var p = this.viewToModel(new CAAT.Point(r.x, r.y));
 			ctx.strokeRect(p.x, p.y, r.width, r.height);
 		},
-		*/
+		/**/
 		
 	};
 	
