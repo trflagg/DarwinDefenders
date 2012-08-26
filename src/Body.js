@@ -62,7 +62,6 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 			this.segments[position] = null;
 		},
 		
-		
 		checkBulletCollision: function(bullet) {
 			console.log("Body CheckBulletCollision("+bullet.x+","+bullet.y+")");
 			var bulletPos = new CAAT.Point(bullet.x, bullet.y);

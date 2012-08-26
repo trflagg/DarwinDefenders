@@ -72,7 +72,7 @@ function(util,Body) {
 			return bulletList;
 		},
 		
-		
+		/*
 		paint: function(director, time) {
 			var ctx = director.ctx;
 			

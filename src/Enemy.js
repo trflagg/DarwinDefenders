@@ -22,7 +22,6 @@ function(util,Ship) {
 		onTick: function(time) {
 			var player = gameScene.player;
 			
-			
 			switch(this.behavior)
 			{
 				case util.BEHAVIOR_SEEK:
@@ -41,7 +40,7 @@ function(util,Ship) {
 			this.velocity.y = Math.max(this.velocity.y, -util.enemyMaxSpeed);
 			this.x = this.x + this.velocity.x;
 			this.y = this.y + this.velocity.y;
-			//console.log(this.velocity.x, + " "+this.velocity.y);
+			console.log(this.velocity.x, + " "+this.velocity.y);
 			if (this.x <= 0) this.x = util.canvasWidth;
 			else if (this.y <= 0) this.y = util.canvasHeight;
 			else if (this.x > util.canvasWidth) this.x = 0;
@@ -60,19 +59,35 @@ function(util,Ship) {
 			//first 6 are position types
 			for (var i=0;i<6; i++)
 			{
-				var newSegment = chromosome.getGene(i).createSegment();
+				var newSegment = this.createSegmentFromType(chromosome[i])
 				if (newSegment !== null)
 				{
 					this.addBodySegment(newSegment, i);
 				}
 			}
 			//next is side
-			this.setScreenSide(chromosome.getGene(6));
+			this.setScreenSide(chromosome[6]);
 			
 			//behavior
-			this.behavior = chromosome.getGene(7);
+			this.behavior = chromosome[7];
 			
 			return this;
+		},
+		
+		createSegmentFromType: function(type) {
+			switch(type)
+			{
+				case util.TYPE_BODY:
+					return new Body();
+					break;
+				case util.TYPE_SHIELD:
+					return new Shield();
+					break;
+				case util.TYPE_GUN:
+					return new Gun();
+					break;
+			}
+			return null;
 		},
 			
 		

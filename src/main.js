@@ -17,8 +17,8 @@ function   (util, Body, Shield, Gun, Ship, GameScene) {
 
 // create a director object
 var director = new CAAT.Director().initialize(
-        util.canvasWidth,    
-        util.canvasHeight,
+        util.canvasHeight,    
+        util.canvasWidth,
         document.getElementById('c1')
 );
 

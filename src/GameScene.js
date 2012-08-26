@@ -1,5 +1,5 @@
-define(["./util", "./Ship", "./Shield", "./Body", "./Gun", "./Enemy","./Chromosome"],
-function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
+define(["./util", "./Ship", "./Shield", "./Body", "./Gun", "./Enemy"],
+function(util, Ship, Shield, Body, Gun, Enemy) {
 	GameScene = function(director) {
 		
 		//set director & scene
@@ -14,20 +14,22 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 		this.player.addBodySegment(new Gun(), util.SEGMENT_FRONT).addBodySegment(new Gun(), util.SEGMENT_BACK);
 		this.scene.addChild(this.player);	
 		
-		//set level
-		this.maxBodyLevel = 2;
-		
 		//and an enemy
+		var ship2 = this.createEnemyFromChromosome(
+			[util.TYPE_BODY,
+			util.TYPE_SHIELD,
+			util.TYPE_SHIELD,
+			util.TYPE_GUN,
+			util.TYPE_SHIELD,
+			util.TYPE_GUN,
+			util.SIDE_TOP,
+			util.BEHAVIOR_SEEK]);
+		//ship2.setLocation(300,300);
+		this.scene.addChild(ship2);
+		
 		this.enemies = new Array();
-		
-		for (var i=0;i<4;i++)
-		{
-			var ship2 = new Enemy().initializeFromChromosome(new Chromosome().randomizeGenes());
-			this.scene.addChild(ship2);
-			var id = this.enemies.push(ship2);
-			ship2.setId(id);
-		}
-		
+		var id = this.enemies.push(ship2);
+		ship2.setId(id);
 		
 		//list of bullets
 		this.bulletList = new Array();
@@ -99,24 +101,21 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 				
 				//check collisions
 				var collisionRect = enemy.getCollisionRect();
-				if (collisionRect !== undefined && collisionRect.x > 0)
-				{
-					this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
-						//run this on collision
-						var b = gameScene.bulletList[obj.id];
-						//check against ship
-						if(enemy.checkBulletCollision(b))
+				this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
+					//run this on collision
+					var b = gameScene.bulletList[obj.id];
+					//check against ship
+					if(enemy.checkBulletCollision(b))
+					{
+						//delete bullet
+						if (b !== undefined)
 						{
-							//delete bullet
-							if (b !== undefined)
-							{
-								b.setDiscardable(true);
-								gameScene.scene.removeChild(b);
-								gameScene.bulletList.splice(obj.id,1); 
-							}
+							b.setDiscardable(true);
+							gameScene.scene.removeChild(b);
+							gameScene.bulletList.splice(obj.id,1); 
 						}
-					});
-				}
+					}
+				});
 			}
 			
 			//move enemy bullets
@@ -165,11 +164,15 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 						gameScene.bulletList.splice(obj.id,1); 
 					}
 				}
-				
-				return true;
 			});
 			
 			
+		},
+		
+		createEnemyFromChromosome: function(chromosome)
+		{
+			var newEnemy = new Enemy().initializeFromChromosome(chromosome);
+			return newEnemy;
 		},
 		
 		createSegmentFromType: function(typeNum)
