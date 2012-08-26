@@ -22,7 +22,8 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 			util.TYPE_GUN,
 			util.TYPE_SHIELD,
 			util.TYPE_GUN,
-			util.SIDE_TOP]);
+			util.SIDE_TOP,
+			util.BEHAVIOR_SEEK]);
 		//ship2.setLocation(300,300);
 		this.scene.addChild(ship2);
 		
@@ -32,6 +33,7 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 		
 		//list of bullets
 		this.bulletList = new Array();
+		this.enemyBulletList = new Array();
 		
 		
 		//add our event methods to the scene
@@ -39,7 +41,7 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 			gameScene.player.setLocation(mouseEvent.x, mouseEvent.y);
 		};
 		this.scene.mouseDown = function(mouseEvent) {
-			var newBList = gameScene.player.shoot();
+			var newBList = gameScene.player.shoot(util.GOOD);
 			gameScene.bulletList = gameScene.bulletList.concat(newBList);
 			for (var i=0;i<newBList.length; i++)
 			{
@@ -66,7 +68,7 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 				b.move();
 	
 				//check in bounds
-				if (b.x < 0 || b.y < 0 || b.x > util.canvasWidth  || b.y > util.canvasHeight )
+				if (b.x <= 0 || b.y <= 0 || b.x >= util.canvasWidth  || b.y >= util.canvasHeight )
 				{
 					if (b !== undefined)
 					{
@@ -94,6 +96,10 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 			{
 				var enemy = this.enemies[i];
 				
+				//move enemy
+				enemy.onTick(time);
+				
+				//check collisions
 				var collisionRect = enemy.getCollisionRect();
 				this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
 					//run this on collision
@@ -111,6 +117,56 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 					}
 				});
 			}
+			
+			//move enemy bullets
+			this.hash.clearObject();
+			for (var i=0;i<this.enemyBulletList.length; i++)
+			{
+				var b = this.enemyBulletList[i];
+				b.move();
+	
+				//check in bounds
+				if (b.x <= 0 || b.y <= 0 || b.x >= util.canvasWidth  || b.y >= util.canvasHeight )
+				{
+					if (b !== undefined)
+					{
+						b.setDiscardable(true);
+						this.scene.removeChild(b);
+						this.enemyBulletList.splice(i,1);
+					}
+				}
+				else
+				{
+					//add to space hash
+					this.hash.addObject( {
+						id: i,
+						x: b.x,
+						y: b.y,
+						width: b.width,
+						height: b.height,
+						rectangular: true
+					});
+				}	 
+			}
+			//check player against bullets
+			var collisionRect = this.player.getCollisionRect();
+			this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
+				//run this on collision
+				var b = gameScene.enemyBulletList[obj.id];
+				//check against ship
+				if(gameScene.player.checkBulletCollision(b))
+				{
+					//delete bullet
+					if (b !== undefined)
+					{
+						b.setDiscardable(true);
+						gameScene.scene.removeChild(b);
+						gameScene.bulletList.splice(obj.id,1); 
+					}
+				}
+			});
+			
+			
 		},
 		
 		createEnemyFromChromosome: function(chromosome)
@@ -128,6 +184,17 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 			
 			return null;
 		},
+		
+		enemyShoot: function(enemy)
+		{
+			var newBList = enemy.shoot(util.EVIL);
+			gameScene.enemyBulletList = gameScene.enemyBulletList.concat(newBList);
+			for (var i=0;i<newBList.length; i++)
+			{
+				gameScene.scene.addChild(newBList[i]);
+			}
+			
+		}
 	};
 	
 	

@@ -5,6 +5,8 @@ function(util,Ship) {
 		this.currentPath = null;
 		this.id = null;
 		
+		this.velocity = new CAAT.Point(0,0);
+		
 		return this;
 	};
 	
@@ -14,6 +16,43 @@ function(util,Ship) {
 		currentPath: null,
 		id: null,
 		chromosome: null,
+		behavior: null,
+		velocity: null,
+		
+		onTick: function(time) {
+			var player = gameScene.player;
+			
+			switch(this.behavior)
+			{
+				case util.BEHAVIOR_SEEK:
+					//get direction to player
+					var direction = new CAAT.Point(this.x - player.x, this.y - player.y);
+					direction.normalize();
+					direction.multiply(util.enemyMoveSpeed);
+					//edit velocity
+					this.velocity = new CAAT.Point(this.velocity.x - direction.x, this.velocity.y - direction.y);
+					break;
+			}
+			
+			this.velocity.x = Math.min(this.velocity.x, util.enemyMaxSpeed);
+			this.velocity.y = Math.min(this.velocity.y, util.enemyMaxSpeed);
+			this.velocity.x = Math.max(this.velocity.x, -util.enemyMaxSpeed);
+			this.velocity.y = Math.max(this.velocity.y, -util.enemyMaxSpeed);
+			this.x = this.x + this.velocity.x;
+			this.y = this.y + this.velocity.y;
+			console.log(this.velocity.x, + " "+this.velocity.y);
+			if (this.x <= 0) this.x = util.canvasWidth;
+			else if (this.y <= 0) this.y = util.canvasHeight;
+			else if (this.x > util.canvasWidth) this.x = 0;
+			else if (this.y > util.canvasHeight) this.y = 0;
+			
+			//shoot the bastards!
+			if (Math.random() <= util.enemyShootProbability)
+			{
+				gameScene.enemyShoot(this);
+			}
+			
+		},
 		
 		initializeFromChromosome: function(chromosome) {
 			this.chromosome = chromosome;
@@ -29,12 +68,26 @@ function(util,Ship) {
 			//next is side
 			this.setScreenSide(chromosome[6]);
 			
-			//set path
-			this.setNewPath();
+			//behavior
+			this.behavior = chromosome[7];
+			
+			return this;
 		},
 		
-		setNewPath: function() { 
-			
+		createSegmentFromType: function(type) {
+			switch(type)
+			{
+				case util.TYPE_BODY:
+					return new Body();
+					break;
+				case util.TYPE_SHIELD:
+					return new Shield();
+					break;
+				case util.TYPE_GUN:
+					return new Gun();
+					break;
+			}
+			return null;
 		},
 			
 		
@@ -46,19 +99,19 @@ function(util,Ship) {
 			switch(side)
 			{
 				case util.SIDE_TOP:
-					this.setLocation(Math.random() * util.canvasWidth, -10);
+					this.setLocation(Math.random() * util.canvasWidth, 0);
 					this.movingTowards = util.SIDE_BOTTOM;
 					break;
 				case util.SIDE_RIGHT:
-					this.setLocation(util.canvasWidth + 10, Math.random() * util.canvasHeight);
+					this.setLocation(util.canvasWidth + 0, Math.random() * util.canvasHeight);
 					this.movingTowards = util.SIDE_LEFT;
 					break;
 				case util.SIDE_BOTTOM:
-					this.setLocation(Math.random() * util.canvasWidth, util.canvasHeight + 10);
+					this.setLocation(Math.random() * util.canvasWidth, util.canvasHeight + 0);
 					this.movingTowards = util.SIDE_TOP;
 					break;
 				case util.SIDE_LEFT:
-					this.setLocation(-10, Math.random() * util.canvasHeight);
+					this.setLocation(0, Math.random() * util.canvasHeight);
 					this.movingTowards = util.SIDE_RIGHT;
 					break;
 			}

@@ -1,20 +1,20 @@
 define(["./util"],
 function(util) {
-	Bullet = function() {
-		Bullet.superclass.constructor.call(this);
+	EnemyBullet = function() {
+		EnemyBullet.superclass.constructor.call(this);
 		
 		this.vx = 0;
 		this.vy = 0;
 		
 		this.initialize( 8, 30, 10 )
 			.setSize(util.bulletSize, util.bulletSize)
-			.setFillStyle('#ff0000')
+			.setFillStyle('#0000ff')
 			.setStrokeStyle('#000000');
 		return this;
 	};
 	
 
-	Bullet.prototype = {
+	EnemyBullet.prototype = {
 		move: function()
 		{
 			this.setPosition(this.x + this.vx, this.y + this.vy);
@@ -22,7 +22,7 @@ function(util) {
 		},
 	};
 	
-	extend(Bullet, CAAT.ShapeActor);
+	extend(EnemyBullet, CAAT.ShapeActor);
 	
-	return Bullet;
+	return EnemyBullet;
 });

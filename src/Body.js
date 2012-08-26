@@ -1,5 +1,5 @@
-define(["./util", "./BodySegment", './Bullet'],
-function(util, BodySegment, Bullet) {
+define(["./util", "./BodySegment", './Bullet', './EnemyBullet'],
+function(util, BodySegment, Bullet, EnemyBullet) {
 	Body = function() {
 		Body.superclass.constructor.call(this);
 		
@@ -138,7 +138,7 @@ function(util, BodySegment, Bullet) {
 			return this;
 		},
 		
-		shoot : function() {
+		shoot : function(morality) {
 			var bulletList = new Array();
 			
 			//run through segments looking for guns or bodies
@@ -151,13 +151,21 @@ function(util, BodySegment, Bullet) {
 					if (seg.bodyType == util.TYPE_BODY)
 					{
 						//attached bodies shoot
-						var bl = seg.shoot();
+						var bl = seg.shoot(morality);
 						bulletList = bulletList.concat(bl);
 					}
 					else if (seg.bodyType == util.TYPE_GUN)
 					{
-						//make a bullet
-						var bullet = new Bullet().setSize(10,10).setFillStyle('#ff0000').setStrokeStyle('#000000').setLocation(this.getBaseX(), this.getBaseY());
+						//make a bullet based on morality
+						if (morality == util.GOOD)
+						{
+							var bullet = new Bullet();
+						}
+						else if (morality == util.EVIL)
+						{
+							var bullet = new EnemyBullet();
+						}
+						bullet.setLocation(this.getBaseX(), this.getBaseY());
 						
 						//move based on body if owned body
 			 			if (this.owner !== null) 

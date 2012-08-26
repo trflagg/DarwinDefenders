@@ -1,12 +1,21 @@
 define ({
-	canvasHeight: 640,
-	canvasWidth: 480,
+	canvasHeight: 960,
+	canvasWidth: 640,
 	hashGridSizeX: 10,
 	hashGridSizeY: 10,
 
-	bodySizeV: 10,
-	bodySizeH: 10 * 2 * Math.cos(Math.PI / 6),
-	shieldSize: 10 * 2,
+	bodySizeV: 5,
+	bodySizeH: 5 * 2 * Math.cos(Math.PI / 6),
+	shieldSize: 5 * 2,
+	bulletSize: 10,
+	
+	enemyMoveSpeed: .1,
+	enemyMaxSpeed: 5,
+	
+	enemyShootProbability:.05,
+	
+	EVIL: 0,
+	GOOD: 1,
 	
 	SEGMENT_TOP_RIGHT: 0,
 	SEGMENT_FRONT: 1,
@@ -25,4 +34,5 @@ define ({
 	SIDE_BOTTOM: 2,
 	SIDE_RIGHT: 3,
 	
+	BEHAVIOR_SEEK: 0,
 });

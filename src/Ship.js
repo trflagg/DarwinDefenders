@@ -66,8 +66,8 @@ function(util,Body) {
 			return this.baseBody.getCollisionRect();
 		},
 		
-		shoot : function() {
-			var bulletList = this.baseBody.shoot();
+		shoot : function(morality) {
+			var bulletList = this.baseBody.shoot(morality);
 			
 			return bulletList;
 		},
