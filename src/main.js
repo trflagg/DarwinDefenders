@@ -17,8 +17,8 @@ function   (util, Body, Shield, Gun, Ship, GameScene) {
 
 // create a director object
 var director = new CAAT.Director().initialize(
-        util.canvasHeight,    
-        util.canvasWidth,
+        util.canvasWidth,    
+        util.canvasHeight,
         document.getElementById('c1')
 );
 
@@ -26,9 +26,11 @@ var director = new CAAT.Director().initialize(
 gameScene = new GameScene(director);
 
 //function for each rendered frame
-director.onRenderStart= function(director, time) {
-	gameScene.onTick(director, time);
+director.onRenderStart= function(time) {
+	gameScene.onTick(time);
 }
+
+gameScene.startGame();
 
 //turn off actor events globally
 CAAT.Actor.prototype.mouseEnabled= false;

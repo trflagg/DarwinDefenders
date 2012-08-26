@@ -1,6 +1,6 @@
 define ({
-	canvasHeight: 960,
-	canvasWidth: 640,
+	canvasHeight: 640,
+	canvasWidth: 960,
 	hashGridSizeX: 10,
 	hashGridSizeY: 10,
 
@@ -9,10 +9,19 @@ define ({
 	shieldSize: 5 * 2,
 	bulletSize: 10,
 	
-	enemyMoveSpeed: .1,
-	enemyMaxSpeed: 5,
+	waveSize: 10,
+	mutateProbability: .5,
 	
-	enemyShootProbability:.05,
+	enemyMoveSpeed: .3,
+	enemyMaxSpeed: 2,
+	enemyWaitMax: 5,
+	enemyBodyBonus: .3,
+	
+	enemyShootProbability:.005,
+	
+	maxBodyLevel: 1,
+	
+	chromosomeSize: 8,
 	
 	EVIL: 0,
 	GOOD: 1,
@@ -24,15 +33,18 @@ define ({
 	SEGMENT_BACK: 4,
 	SEGMENT_TOP_LEFT: 5,
 	
+	typeCount: 4,
 	TYPE_NONE: 0,
 	TYPE_BODY: 1,
 	TYPE_SHIELD: 2,
 	TYPE_GUN: 3,
 	
+	sideCount: 4,
 	SIDE_TOP: 0,
 	SIDE_LEFT: 1,
 	SIDE_BOTTOM: 2,
 	SIDE_RIGHT: 3,
 	
+	behaviorCount: 1,
 	BEHAVIOR_SEEK: 0,
 });

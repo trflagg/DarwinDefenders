@@ -15,6 +15,7 @@ function(util,Body) {
 	Ship.prototype = {
 		baseBody: null,
 		bodyCount: 0,
+		alive: true,
 		
 		hit: function(bullet) {
 			//they got us!
@@ -22,6 +23,11 @@ function(util,Body) {
 			this.removeChild(this.baseBody);
 			//callback to parent or something
 			
+		},
+		
+		die: function() {
+			//they got us!
+			this.alive = false;
 		},
 		
 		checkBulletCollision: function(bullet) {
@@ -40,7 +46,7 @@ function(util,Body) {
 				if (seg == this.baseBody)
 				{
 					//we're toast
-					this.hit(bullet);
+					this.die();
 				}
 				else
 				{
@@ -66,8 +72,8 @@ function(util,Body) {
 			return this.baseBody.getCollisionRect();
 		},
 		
-		shoot : function(morality) {
-			var bulletList = this.baseBody.shoot(morality);
+		shoot : function(morality, owner) {
+			var bulletList = this.baseBody.shoot(morality, owner);
 			
 			return bulletList;
 		},

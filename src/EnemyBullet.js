@@ -1,10 +1,12 @@
 define(["./util"],
 function(util) {
-	EnemyBullet = function() {
+	EnemyBullet = function(owner) {
 		EnemyBullet.superclass.constructor.call(this);
 		
 		this.vx = 0;
 		this.vy = 0;
+		
+		this.owner = owner;
 		
 		this.initialize( 8, 30, 10 )
 			.setSize(util.bulletSize, util.bulletSize)

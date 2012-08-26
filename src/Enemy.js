@@ -6,7 +6,10 @@ function(util,Ship) {
 		this.id = null;
 		
 		this.velocity = new CAAT.Point(0,0);
+		this.waiting = Math.floor(Math.random() * util.enemyWaitMax) * 1000;
 		
+		this.timeAlive = 0;
+		this.playerHits = 0;
 		return this;
 	};
 	
@@ -19,8 +22,26 @@ function(util,Ship) {
 		behavior: null,
 		velocity: null,
 		
+		getFitness: function() {
+			return (this.timeAlive * (1 + this.playerHits));
+		},
+		
+		hitPlayer: function(score) {
+			this.playerHits += score;
+		},
+		
 		onTick: function(time) {
 			var player = gameScene.player;
+			
+			//check waiting
+			this.waiting -= time;
+			if (this.waiting > 0)
+			{
+				//not ready yet. stay right there!
+				return;
+			}
+			
+			this.timeAlive += time;
 			
 			switch(this.behavior)
 			{
@@ -36,11 +57,11 @@ function(util,Ship) {
 			
 			this.velocity.x = Math.min(this.velocity.x, util.enemyMaxSpeed);
 			this.velocity.y = Math.min(this.velocity.y, util.enemyMaxSpeed);
-			this.velocity.x = Math.max(this.velocity.x, -util.enemyMaxSpeed);
-			this.velocity.y = Math.max(this.velocity.y, -util.enemyMaxSpeed);
+			this.velocity.x = Math.max(this.velocity.x, - (util.enemyMaxSpeed));
+			this.velocity.y = Math.max(this.velocity.y, - (util.enemyMaxSpeed));
 			this.x = this.x + this.velocity.x;
 			this.y = this.y + this.velocity.y;
-			console.log(this.velocity.x, + " "+this.velocity.y);
+			//console.log(this.velocity.x, + " "+this.velocity.y);
 			if (this.x <= 0) this.x = util.canvasWidth;
 			else if (this.y <= 0) this.y = util.canvasHeight;
 			else if (this.x > util.canvasWidth) this.x = 0;
@@ -59,35 +80,19 @@ function(util,Ship) {
 			//first 6 are position types
 			for (var i=0;i<6; i++)
 			{
-				var newSegment = this.createSegmentFromType(chromosome[i])
+				var newSegment = chromosome.getGene(i).createSegment();
 				if (newSegment !== null)
 				{
 					this.addBodySegment(newSegment, i);
 				}
 			}
 			//next is side
-			this.setScreenSide(chromosome[6]);
+			this.setScreenSide(chromosome.getGene(6));
 			
 			//behavior
-			this.behavior = chromosome[7];
+			this.behavior = chromosome.getGene(7);
 			
 			return this;
-		},
-		
-		createSegmentFromType: function(type) {
-			switch(type)
-			{
-				case util.TYPE_BODY:
-					return new Body();
-					break;
-				case util.TYPE_SHIELD:
-					return new Shield();
-					break;
-				case util.TYPE_GUN:
-					return new Gun();
-					break;
-			}
-			return null;
 		},
 			
 		
@@ -99,19 +104,19 @@ function(util,Ship) {
 			switch(side)
 			{
 				case util.SIDE_TOP:
-					this.setLocation(Math.random() * util.canvasWidth, 0);
+					this.setLocation(Math.random() * util.canvasWidth, -500);
 					this.movingTowards = util.SIDE_BOTTOM;
 					break;
 				case util.SIDE_RIGHT:
-					this.setLocation(util.canvasWidth + 0, Math.random() * util.canvasHeight);
+					this.setLocation(util.canvasWidth + 500, Math.random() * util.canvasHeight);
 					this.movingTowards = util.SIDE_LEFT;
 					break;
 				case util.SIDE_BOTTOM:
-					this.setLocation(Math.random() * util.canvasWidth, util.canvasHeight + 0);
+					this.setLocation(Math.random() * util.canvasWidth, util.canvasHeight + 500);
 					this.movingTowards = util.SIDE_TOP;
 					break;
 				case util.SIDE_LEFT:
-					this.setLocation(0, Math.random() * util.canvasHeight);
+					this.setLocation(-500, Math.random() * util.canvasHeight);
 					this.movingTowards = util.SIDE_RIGHT;
 					break;
 			}

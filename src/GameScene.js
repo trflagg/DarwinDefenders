@@ -1,5 +1,5 @@
-define(["./util", "./Ship", "./Shield", "./Body", "./Gun", "./Enemy"],
-function(util, Ship, Shield, Body, Gun, Enemy) {
+define(["./util", "./Ship", "./Shield", "./Body", "./Gun", "./Enemy","./Chromosome"],
+function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 	GameScene = function(director) {
 		
 		//set director & scene
@@ -14,22 +14,11 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 		this.player.addBodySegment(new Gun(), util.SEGMENT_FRONT).addBodySegment(new Gun(), util.SEGMENT_BACK);
 		this.scene.addChild(this.player);	
 		
-		//and an enemy
-		var ship2 = this.createEnemyFromChromosome(
-			[util.TYPE_BODY,
-			util.TYPE_SHIELD,
-			util.TYPE_SHIELD,
-			util.TYPE_GUN,
-			util.TYPE_SHIELD,
-			util.TYPE_GUN,
-			util.SIDE_TOP,
-			util.BEHAVIOR_SEEK]);
-		//ship2.setLocation(300,300);
-		this.scene.addChild(ship2);
-		
+		//and enemies
 		this.enemies = new Array();
-		var id = this.enemies.push(ship2);
-		ship2.setId(id);
+		
+		//set level
+		this.maxBodyLevel = 2;
 		
 		//list of bullets
 		this.bulletList = new Array();
@@ -41,7 +30,7 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 			gameScene.player.setLocation(mouseEvent.x, mouseEvent.y);
 		};
 		this.scene.mouseDown = function(mouseEvent) {
-			var newBList = gameScene.player.shoot(util.GOOD);
+			var newBList = gameScene.player.shoot(util.GOOD, this);
 			gameScene.bulletList = gameScene.bulletList.concat(newBList);
 			for (var i=0;i<newBList.length; i++)
 			{
@@ -57,8 +46,33 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 		director: null,
 		scene: null,
 		
-		onTick: function(director, time) {
+		startGame: function() {
+			//make first wave	
+			for (var i=0;i<util.waveSize;i++)
+			{
+				var ship2 = new Enemy().initializeFromChromosome(new Chromosome().randomizeGenes());
+				this.scene.addChild(ship2);
+				var id = this.enemies.push(ship2);
+				ship2.setId(id);
+			}
+		},
+		
+		shipDied: function(ship) {
+			console.log("ship Died");
+			if (ship == this.player)
+			{
+				console.log("player Died");
+			}
+			else
+			{
+				this.scene.removeChild(ship);
+				
+			}
+		},
+		
+		onTick: function(time) {
 			//prepare collision detection
+			//console.log(time);
 			this.hash.clearObject();
 			
 			//move all of the bullets
@@ -92,30 +106,53 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 			}
 			
 			//check enemies against bullets
+			var deadEnemyList = new Array();
 			for (var i=0;i<this.enemies.length; i++)
 			{
 				var enemy = this.enemies[i];
 				
+				if (enemy === null || !enemy.alive)
+					continue;
+				
 				//move enemy
 				enemy.onTick(time);
 				
+				//stop if still waiting
+				if (enemy.waiting > 0)
+					continue;
+				
 				//check collisions
 				var collisionRect = enemy.getCollisionRect();
-				this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
-					//run this on collision
-					var b = gameScene.bulletList[obj.id];
-					//check against ship
-					if(enemy.checkBulletCollision(b))
-					{
-						//delete bullet
-						if (b !== undefined)
+				if (collisionRect !== undefined && collisionRect.x > 0)
+				{
+					this.hash.collide(collisionRect.x, collisionRect.y, collisionRect.width, collisionRect.height, function(obj) { 	
+						//run this on collision
+						var b = gameScene.bulletList[obj.id];
+						//check against ship
+						if(enemy.checkBulletCollision(b))
 						{
-							b.setDiscardable(true);
-							gameScene.scene.removeChild(b);
-							gameScene.bulletList.splice(obj.id,1); 
+							//delete bullet
+							if (b !== undefined)
+							{
+								b.setDiscardable(true);
+								gameScene.scene.removeChild(b);
+								gameScene.bulletList.splice(obj.id,1); 
+							}
 						}
-					}
-				});
+					});
+				}
+				//check for death
+				if (!enemy.alive)
+				{
+					deadEnemyList.push(enemy);
+				}
+				
+			}
+			
+			//bring out your dead!
+			for (var i=0;i<deadEnemyList.length;i++)
+			{
+				this.shipDied(deadEnemyList[i]);
 			}
 			
 			//move enemy bullets
@@ -159,20 +196,81 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 					//delete bullet
 					if (b !== undefined)
 					{
+						b.owner.hitPlayer(1);
 						b.setDiscardable(true);
 						gameScene.scene.removeChild(b);
 						gameScene.bulletList.splice(obj.id,1); 
 					}
+					
+					//player hit
+					gameScene.playerHit();
 				}
+				
 			});
+			
+			//check if wave is over
+			var allDead = true;
+			for (var i=0; i<this.enemies.length; i++)
+			{
+				if (this.enemies[i].alive)
+					allDead = false;
+			}
+			
+			if (allDead)
+			{
+				this.nextWave();
+			}
 			
 			
 		},
 		
-		createEnemyFromChromosome: function(chromosome)
+		playerHit: function()
 		{
-			var newEnemy = new Enemy().initializeFromChromosome(chromosome);
-			return newEnemy;
+			//do nothing right now
+		},
+		
+		nextWave: function()
+		{
+			//get the fitest
+			var maxFitness1 = 0, maxFitness2 = 0;
+			var maxId1 = null, maxId2 = null;
+			for (var i=0; i<this.enemies.length; i++)
+			{
+				var enemy = this.enemies[i];
+				if (enemy.getFitness() > maxFitness1)
+				{
+					maxFitness2 = maxFitness1;
+					maxId2 = maxId1;
+					maxFitness1 = enemy.getFitness();
+					maxId1 = i;
+				}
+				else if (enemy.getFitness() > maxFitness2)
+				{
+					maxFitness2 = enemy.getFitness();
+					maxId2 = i;
+				}
+			}
+			
+			//cross-breed
+			var nextGeneration = this.enemies[maxId1].chromosome.crossBreedWith(this.enemies[maxId2].chromosome, util.waveSize);
+			
+			//out with the old
+			this.enemies = new Array();
+			
+			//in with the new
+			for (var i=0;i<util.waveSize;i++)
+			{
+				var ship2 = new Enemy().initializeFromChromosome(nextGeneration[i]);
+				this.scene.addChild(ship2);
+				var id = this.enemies.push(ship2);
+				ship2.setId(id);
+			}
+			
+			
+		},
+		
+		playerHit: function()
+		{
 		},
 		
 		createSegmentFromType: function(typeNum)
@@ -187,7 +285,7 @@ function(util, Ship, Shield, Body, Gun, Enemy) {
 		
 		enemyShoot: function(enemy)
 		{
-			var newBList = enemy.shoot(util.EVIL);
+			var newBList = enemy.shoot(util.EVIL,enemy);
 			gameScene.enemyBulletList = gameScene.enemyBulletList.concat(newBList);
 			for (var i=0;i<newBList.length; i++)
 			{

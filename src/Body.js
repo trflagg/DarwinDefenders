@@ -62,11 +62,12 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 			this.segments[position] = null;
 		},
 		
+		
 		checkBulletCollision: function(bullet) {
-			console.log("Body CheckBulletCollision("+bullet.x+","+bullet.y+")");
+			//console.log("Body CheckBulletCollision("+bullet.x+","+bullet.y+")");
 			var bulletPos = new CAAT.Point(bullet.x, bullet.y);
 			var modelPos = this.viewToModel(bulletPos);
-			console.log("modelPos: ("+modelPos.x+","+modelPos.y+")");
+			//console.log("modelPos: ("+modelPos.x+","+modelPos.y+")");
 			
 			//make sure your own mask is secure before helping others
 			if (this.isPointInBody(modelPos))
@@ -117,12 +118,12 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 			{
 				//convert points for slaves
 				modelPos = this.changePointByBodyPosition(modelPos, this.invertPosition(this.ownerPosition));
-				console.log("SLAVE modelPos: ("+modelPos.x+","+modelPos.y+")");
+				//console.log("SLAVE modelPos: ("+modelPos.x+","+modelPos.y+")");
 			}
 			//convert pos to center
 			var centerX = this.x + util.bodySizeH;
 			var centerY = this.y + (2 * util.bodySizeV);
-			console.log("centerX: "+centerX+" centerY: "+centerY);
+			//console.log("centerX: "+centerX+" centerY: "+centerY);
 			//check if point is in hexagon
 			//big ups to http://www.playchilla.com/how-to-check-if-a-point-is-inside-a-hexagon
 			var q2x = Math.abs(modelPos.x - centerX);         // transform the test point locally and to quadrant 2
@@ -138,7 +139,7 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 			return this;
 		},
 		
-		shoot : function(morality) {
+		shoot : function(morality, owner) {
 			var bulletList = new Array();
 			
 			//run through segments looking for guns or bodies
@@ -151,7 +152,7 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 					if (seg.bodyType == util.TYPE_BODY)
 					{
 						//attached bodies shoot
-						var bl = seg.shoot(morality);
+						var bl = seg.shoot(morality, owner);
 						bulletList = bulletList.concat(bl);
 					}
 					else if (seg.bodyType == util.TYPE_GUN)
@@ -163,7 +164,7 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 						}
 						else if (morality == util.EVIL)
 						{
-							var bullet = new EnemyBullet();
+							var bullet = new EnemyBullet(owner);
 						}
 						bullet.setLocation(this.getBaseX(), this.getBaseY());
 						
