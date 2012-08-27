@@ -9,7 +9,7 @@ The theme was evolution, so I made a game where the enemies evolve via genetic a
 You can play the game on my website:
 http://hi-scor.es/ld24
 
-Please keep in mind that this code was all written in 48. It's not the prettiest, most-efficient, or best-organized -but it's fun.
+Please keep in mind that this code was all written in 48 hours. It's not the prettiest, most-efficient, or best-organized -but it's fun.
 
 Highlights:
 src/Body.js - This is the hex body. Contains some collision detection & logic for placing the other parts. Just about everything had to be recursive so that bodies could connect to other bodies.
