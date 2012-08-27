@@ -1,9 +1,13 @@
-<h1>Darwin Defenders v0.1</h1>
-This is my entry for <a href="http://www.ludumdare.com/compo/">Ludum Dare #24</a>.
+Darwin Defenders v0.1
+
+
+This is my entry for Ludum Dare:
+http://www.ludumdare.com/compo/
 
 The theme was evolution, so I made a game where the enemies evolve via genetic algorithm.
 
-You can play the game on my website: <a href="http://hi-scor.es/ld24">http://hi-scor.es/ld24</a>.
+You can play the game on my website:
+http://hi-scor.es/ld24
 
 Please keep in mind that this code was all written in 48. It's not the prettiest, most-efficient, or best-organized -but it's fun.
 
