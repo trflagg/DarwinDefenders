@@ -9,20 +9,11 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 		//spacial-hash for collisions
 		this.hash= new CAAT.SpatialHash().initialize( util.canvasWidth, util.canvasHeight, util.hashGridSizeX, util.hashGridSizeY);
 
-		//we gotta have a player
-		this.player = new Ship().setLocation(0,0);
-		this.player.addBodySegment(new Gun(), util.SEGMENT_FRONT).addBodySegment(new Gun(), util.SEGMENT_BACK);
-		this.scene.addChild(this.player);	
-		
-		//and enemies
-		this.enemies = new Array();
-		
 		//set level
 		this.maxBodyLevel = 2;
 		
-		//list of bullets
-		this.bulletList = new Array();
-		this.enemyBulletList = new Array();
+		this.statusText = new CAAT.TextActor().setFont("12pt Helvetica").setLocation(10, 10);
+		
 		
 		
 		//add our event methods to the scene
@@ -46,8 +37,50 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 		director: null,
 		scene: null,
 		
+		updateStatus: function() {
+			this.scene.removeChild(this.statusText);
+			this.statusText.setText("Wave: "+ this.waveCount + " / "+util.waveGoal+"          Shields:"+ this.playerShields+"%");
+			this.scene.addChild(this.statusText);
+		},
+		
+		winGame: function() {
+			alert("Congratulations! Y'know, this game is different every time you play. You should play again!");
+			window.location.href = "index.html";
+			this.director.endLoop();
+			
+		},
+		
+		endGame: function() {
+			alert("Game Over! Y'know, this game is different every time you play. You should play again!");
+			window.location.href = "index.html";
+			this.director.endLoop();
+		},
+		
 		startGame: function() {
+			
+			//this.scene.emptyChildren();
+			
+			this.scene.addChild(this.statusText);
+			//we gotta have a player
+			this.player = new Ship().setLocation(0,0);
+			this.player.addBodySegmentSomewhere(new Gun());
+			this.player.addBodySegmentSomewhere(new Shield());
+			this.scene.addChild(this.player);	
+			this.playerShields = 100;
+		
+		
+			//and enemies
+			this.enemies = new Array();
+
+			//list of bullets
+			this.bulletList = new Array();
+			this.enemyBulletList = new Array();
+		
+		
+		
 			//make first wave	
+			this.waveCount = 1;
+			this.updateStatus();
 			for (var i=0;i<util.waveSize;i++)
 			{
 				var ship2 = new Enemy().initializeFromChromosome(new Chromosome().randomizeGenes());
@@ -208,6 +241,14 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 				
 			});
 			
+			/*
+			if (!this.player.alive)
+			{
+				this.playerHit();
+				this.player.alive = true;
+			}
+			*/
+			
 			//check if wave is over
 			var allDead = true;
 			for (var i=0; i<this.enemies.length; i++)
@@ -226,11 +267,36 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 		
 		playerHit: function()
 		{
-			//do nothing right now
+			this.playerShields -= 5;
+			this.updateStatus();
+			
+			//reset bullets due to bug
+			this.bulletList = new Array();
+			
+			if (this.playerShields <= 0)
+			{
+				//game over
+				this.endGame();
+			}
 		},
 		
 		nextWave: function()
 		{
+			//update wave
+			this.waveCount++;
+			this.updateStatus();
+			
+			if (this.waveCount > util.waveGoal)
+			{
+				this.winGame();
+				return;
+			}
+			
+			//add to the player
+			//(exclude NONE type)
+			var type = Math.floor(Math.random() * (util.typeCount - 1)) + 1;
+			this.player.addBodySegmentSomewhere(this.createSegmentFromType(type));
+				
 			//get the fitest
 			var maxFitness1 = 0, maxFitness2 = 0;
 			var maxId1 = null, maxId2 = null;
@@ -269,9 +335,6 @@ function(util, Ship, Shield, Body, Gun, Enemy, Chromosome) {
 			
 		},
 		
-		playerHit: function()
-		{
-		},
 		
 		createSegmentFromType: function(typeNum)
 		{

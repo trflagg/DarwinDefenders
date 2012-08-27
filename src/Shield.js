@@ -4,7 +4,7 @@ function(util, BodySegment) {
 		Shield.superclass.constructor.call(this);
 		
 		
-        this.setFillStyle('#ffff00');
+        this.setFillStyle('#fcac36');
         this.setStrokeStyle('#000000');
 
 

@@ -8,7 +8,7 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 		this.setSize(3 * util.bodySizeH, 6 * util.bodySizeV);
 		//this.horizontal = this.vertical * 2 * Math.cos(Math.PI / 6);
 		
-        this.setFillStyle('#ff0000');
+        this.setFillStyle('#ebce9e');
         this.setStrokeStyle('#000000');
 
 		this.segments = new Array();
@@ -29,6 +29,29 @@ function(util, BodySegment, Bullet, EnemyBullet) {
 		segments: null,
 		ownerPosition: null,
 		owner: null,
+		
+		addBodySegmentSomewhere: function(segment) {
+			var found = false;
+			//need a count as a lazy way to thwart infinite loops
+			var count = 0;
+			//find random position that's open or a body
+			while(!found || (count > 100))
+			{
+				var pos = Math.floor(Math.random() * 6);
+				count++;
+				if (this.segments[pos] === null)
+				{
+					this.addBodySegment(segment, pos);
+					found = true;
+				}
+				else if(this.segments[pos].bodyType == util.TYPE_BODY)
+				{
+					//try and find something on that
+					this.segments[pos].addBodySegmentSomewhere(segment);
+					found = true;
+				}
+			}
+		},
 		
 		getCollisionRect: function() {
 			var x = this.getBaseX();

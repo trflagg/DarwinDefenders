@@ -8,7 +8,7 @@ function(util) {
 		
 		this.initialize( 8, 30, 10 )
 			.setSize(util.bulletSize, util.bulletSize)
-			.setFillStyle('#ff0000')
+			.setFillStyle('#E01B6A')
 			.setStrokeStyle('#000000');
 		return this;
 	};

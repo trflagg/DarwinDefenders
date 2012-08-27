@@ -78,6 +78,20 @@ function(util,Body) {
 			return bulletList;
 		},
 		
+		addBodySegmentSomewhere: function(segment) {
+			if (segment === null)
+			{
+				return this;
+			}
+			var result =this.baseBody.addBodySegmentSomewhere(segment);
+			if (segment.bodyType == util.TYPE_BODY)
+			{
+				this.bodyCount++;
+			}
+			return this;
+			
+		},
+			
 		/*
 		paint: function(director, time) {
 			var ctx = director.ctx;

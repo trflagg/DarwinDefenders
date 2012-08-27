@@ -9,15 +9,17 @@ define ({
 	shieldSize: 5 * 2,
 	bulletSize: 10,
 	
+	waveGoal:10,
+	
 	waveSize: 10,
 	mutateProbability: .5,
 	
 	enemyMoveSpeed: .3,
 	enemyMaxSpeed: 2,
-	enemyWaitMax: 5,
+	enemyWaitMax: 9,
 	enemyBodyBonus: .3,
 	
-	enemyShootProbability:.005,
+	enemyShootProbability:.006,
 	
 	maxBodyLevel: 1,
 	
