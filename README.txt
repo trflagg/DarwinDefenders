@@ -1,13 +1,12 @@
 Darwin Defenders v0.1
 
 
-This is my entry for Ludum Dare:
-http://www.ludumdare.com/compo/
+This is my entry for Ludum Dare #24.
 
 The theme was evolution, so I made a game where the enemies evolve via genetic algorithm.
 
 You can play the game on my website:
-http://hi-scor.es/ld24
+http://hi-scor.es/darwin_defenders/
 
 Please keep in mind that this code was all written in 48 hours. It's not the prettiest, most-efficient, or best-organized -but it's fun.
 
@@ -29,3 +28,4 @@ http://www.playchilla.com/how-to-check-if-a-point-is-inside-a-hexagon
 http://en.wikipedia.org/wiki/Equilateral_triangle
 http://www.red3d.com/cwr/steer/gdc99/
 http://www.obitko.com/tutorials/genetic-algorithms/
+
